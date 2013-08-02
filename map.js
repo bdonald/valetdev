@@ -6,6 +6,10 @@ function MapCtrl($scope) {
   var geocoder;
   var map;
  
+  var mapRef = new Firebase("https://valetmap.firebaseio.com");
+  var eventRef = mapRef.child('Event');
+  
+
   $scope.addMap = function() {
     $scope.maps.push({text:$scope.mapText}, {location:$scope.mapLocation});
     var address = document.getElementById('address').value;
@@ -21,6 +25,12 @@ function MapCtrl($scope) {
       alert('Geocode was not successful for the following reason: ' + status);
     }
   });
+
+    var newPushRef = eventRef.push();
+
+    newPushRef.set({Name : $scope.mapText, Address : $scope.mapLocation}); 
+
+
     $scope.mapText = '';
     $scope.mapLocation = '';
 
