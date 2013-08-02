@@ -1,15 +1,24 @@
 
+angular.module('project', ['firebase']).
+  value('fbURL', 'https://valetmap.firebaseio.com/').
+  factory('Projects', function(angularFireCollection, fbURL) {
+    return angularFireCollection(fbURL);
+  }).
+  config(function($routeProvider) {
+    $routeProvider.
+      when('/', {controller:MapCtrl, templateUrl:'map.html'}).
+      when('/edit/:projectId', {controller:EditCtrl, templateUrl:'detail.html'}).
+      when('/new', {controller:CreateCtrl, templateUrl:'detail.html'}).
+      otherwise({redirectTo:'/'});
+  });
+ 
 
-function MapCtrl($scope) {
-  $scope.maps = [];
+function MapCtrl($scope, Maps) {
+  $scope.maps = Maps;
 
   var geocoder;
   var map;
- 
-  var mapRef = new Firebase("https://valetmap.firebaseio.com");
-  var eventRef = mapRef.child('Event');
   
-
   $scope.addMap = function() {
     $scope.maps.push({text:$scope.mapText}, {location:$scope.mapLocation});
     var address = document.getElementById('address').value;
@@ -26,16 +35,40 @@ function MapCtrl($scope) {
     }
   });
 
-    var newPushRef = eventRef.push();
-
-    newPushRef.set({Name : $scope.mapText, Address : $scope.mapLocation}); 
-
 
     $scope.mapText = '';
     $scope.mapLocation = '';
 
       };
+}
  
+function CreateCtrl($scope, $location, $timeout, Maps) {
+  $scope.save = function() {
+    Maps.add($scope.maps, function() {
+      $timeout(function() { $location.path('/'); });
+    });
+  }
+}
+ 
+function EditCtrl($scope, $location, $routeParams, angularFire, fbURL) {
+  angularFire(fbURL + $routeParams.projectId, $scope, 'remote', {}).
+  then(function() {
+    $scope.project = angular.copy($scope.remote);
+    $scope.project.$id = $routeParams.projectId;
+    $scope.isClean = function() {
+      return angular.equals($scope.remote, $scope.project);
+    }
+    $scope.destroy = function() {
+      $scope.remote = null;
+      $location.path('/');
+    };
+    $scope.save = function() {
+      $scope.remote = angular.copy($scope.project);
+      $location.path('/');
+    };
+  });
+}
+
 
 function initialize() {
   geocoder = new google.maps.Geocoder();
@@ -50,5 +83,6 @@ function initialize() {
 
 
 google.maps.event.addDomListener(window, 'load', initialize);
- 
-}
+
+
+
