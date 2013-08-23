@@ -1,88 +1,62 @@
+$(document).ready(function() {
+	var eventsRef = new Firebase('https://valet-event-map.firebaseio.com/events');
+	var eventMap = {
+		parseForm: function(selector) {
+			var event = {};
+			event.name = $(selector).find('#eventName').first().val();
+			event.address = $(selector).find('#address').first().val();
+			return event;
+		},
+		resetForm: function() {
+			$('#addEvent').children('input[type="text"]').each(function(i, input) {
+				$(input).val('');
+			});
+		},
+		addEvent: function(event) {
+			eventsRef.push(event);
+		},
+		addTableEntry: function(event) {
+			$('#eventsTable tbody').append("<tr><td>" + event.name + "</td><td>" + event.address + "</td></tr>");
+		},
+		addPin: function(event) {
+			eventMap.geocoder.geocode({address: event.address}, function(results, status) {
+				if (status === google.maps.GeocoderStatus.OK) {
+						var location = results[0].geometry.location;
+						eventMap.map.setCenter(location);
+						new google.maps.Marker({
+							map: eventMap.map,
+							position: location
+						});
+				}
+				else {
+					alert('Geocode failed!');
+					return false;
+				}
+			})
+		},
+		initMap: function() {
+			var options = {
+				zoom: 12,
+				center: new google.maps.LatLng(40.7142, -74.0064),
+				mapTypeId: google.maps.MapTypeId.ROADMAP
+			}
+			return new google.maps.Map($('#map-canvas')[0], options);
+		},
+		geocoder: new google.maps.Geocoder()
+	};
 
-angular.module('project', ['firebase']).
-  value('fbURL', 'https://valetmap.firebaseio.com/').
-  factory('Projects', function(angularFireCollection, fbURL) {
-    return angularFireCollection(fbURL);
-  }).
-  config(function($routeProvider) {
-    $routeProvider.
-      when('/', {controller:MapCtrl, templateUrl:'map.html'}).
-      when('/edit/:projectId', {controller:EditCtrl, templateUrl:'detail.html'}).
-      when('/new', {controller:CreateCtrl, templateUrl:'detail.html'}).
-      otherwise({redirectTo:'/'});
-  });
- 
+	eventMap.map = eventMap.initMap();
 
-function MapCtrl($scope, Maps) {
-  $scope.maps = Maps;
+	eventsRef.on('child_added', function(snapshot) {
+		var event = snapshot.val();
+		eventMap.addTableEntry(event);
+		eventMap.addPin(event);
+	});
 
-  var geocoder;
-  var map;
-  
-  $scope.addMap = function() {
-    $scope.maps.push({text:$scope.mapText}, {location:$scope.mapLocation});
-    var address = document.getElementById('address').value;
-  var name = document.getElementById('name').value;
-  geocoder.geocode( { 'address': address}, function(results, status) {
-    if (status == google.maps.GeocoderStatus.OK) {
-      map.setCenter(results[0].geometry.location);
-      var marker = new google.maps.Marker({
-          map: map,
-          position: results[0].geometry.location
-      });
-    } else {
-      alert('Geocode was not successful for the following reason: ' + status);
-    }
-  });
-
-
-    $scope.mapText = '';
-    $scope.mapLocation = '';
-
-      };
-}
- 
-function CreateCtrl($scope, $location, $timeout, Maps) {
-  $scope.save = function() {
-    Maps.add($scope.maps, function() {
-      $timeout(function() { $location.path('/'); });
-    });
-  }
-}
- 
-function EditCtrl($scope, $location, $routeParams, angularFire, fbURL) {
-  angularFire(fbURL + $routeParams.projectId, $scope, 'remote', {}).
-  then(function() {
-    $scope.project = angular.copy($scope.remote);
-    $scope.project.$id = $routeParams.projectId;
-    $scope.isClean = function() {
-      return angular.equals($scope.remote, $scope.project);
-    }
-    $scope.destroy = function() {
-      $scope.remote = null;
-      $location.path('/');
-    };
-    $scope.save = function() {
-      $scope.remote = angular.copy($scope.project);
-      $location.path('/');
-    };
-  });
-}
-
-
-function initialize() {
-  geocoder = new google.maps.Geocoder();
-  var mapOptions = {
-    zoom: 12,
-    center: new google.maps.LatLng(40.7142, -74.0064),
-    mapTypeId: google.maps.MapTypeId.ROADMAP
-  };
-  map = new google.maps.Map(document.getElementById('map-canvas'),
-      mapOptions);
-}
-
-
-google.maps.event.addDomListener(window, 'load', initialize);
-
-
-
+	$('#addEvent').submit(function(e) {
+		e.preventDefault();
+		var event = eventMap.parseForm(this);
+		eventMap.addEvent(event);
+		eventMap.resetForm();
+	});
+});
