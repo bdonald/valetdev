@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Simple Map</title>
+    <title>Valet.io Event Tracker</title>
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
     <meta charset="utf-8">
     <link rel="stylesheet" href="map.css">
@@ -12,9 +12,25 @@
     <script src="map.js"></script>
   </head>
   <body>
-    <div class ="jumbotron">Valet.io - We're takin ova</div>
+    <div class ="jumbotron">
+      <h1>Valet.io</h1>
+      <h2>Event Map</h2>
+    </div>
+    <div id = "totals"></div>
+    <div id = "inline_elements">
     <div id="map-canvas"></div>
-    <form id='addEvent' class="form-horizontal" role ="form">
+    <div id = "table-format">
+      <table id="eventsTable" class = "table table-condensed">
+        <thead>
+          <tr><th>Event</th><th>Location</th><th>Amount Raised</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+  </div>
+</div>
+  <div class = "formcontainer">
+    <h3>Add event</h3>
+    <form id='addEvent' class="form-inline" role ="form">
       <div class="form-group">
         <div class="col-lg-4">
           <input type='text' id='eventName' placeholder='Event' class="form-control">
@@ -22,14 +38,12 @@
          <div class="col-lg-4">
           <input type='text' id='address' placeholder='Location' class="form-control">
         </div>
+        <div class="col-lg-4">
+          <input type='number' id='amount' placeholder='Amount Raised' class="form-control">
+        </div>
         <button type='submit' class="btn btn-primary">Add</button>
       </div>
     </form>
-   <table id="eventsTable" class = "table">
-      <thead>
-        <tr><th>Event</th><th>Location</th></tr>
-      </thead>
-      <tbody></tbody>
-    </table>   
+  </div>
   </body>
 </html>

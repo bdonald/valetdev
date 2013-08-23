@@ -1,10 +1,12 @@
 $(document).ready(function() {
 	var eventsRef = new Firebase('https://valet-event-map.firebaseio.com/events');
+	var total = 0;
 	var eventMap = {
 		parseForm: function(selector) {
 			var event = {};
 			event.name = $(selector).find('#eventName').first().val();
 			event.address = $(selector).find('#address').first().val();
+			event.amount = $(selector).find('#amount').first().val();
 			return event;
 		},
 		resetForm: function() {
@@ -16,7 +18,12 @@ $(document).ready(function() {
 			eventsRef.push(event);
 		},
 		addTableEntry: function(event) {
-			$('#eventsTable tbody').append("<tr><td>" + event.name + "</td><td>" + event.address + "</td></tr>");
+			$('#eventsTable tbody').append("<tr><td>" + event.name + "</td><td>" + event.address + "</td><td>" + event.amount + "</td></tr>");
+		},
+		computeTotal: function(event){
+			total = total + parseInt(event.amount);
+			document.getElementById('totals').innerHTML = "<h3>$" + total + " raised!</h3>";
+			return total;
 		},
 		addPin: function(event) {
 			eventMap.geocoder.geocode({address: event.address}, function(results, status) {
@@ -51,6 +58,7 @@ $(document).ready(function() {
 		var event = snapshot.val();
 		eventMap.addTableEntry(event);
 		eventMap.addPin(event);
+		eventMap.computeTotal(event);
 	});
 
 	$('#addEvent').submit(function(e) {

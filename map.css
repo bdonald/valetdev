@@ -1,6 +1,6 @@
 html, body,  {
 	margin: 0;
-  padding: 0;
+  	padding: 0;
 	height: 100%;
 	width: 100%;
 }
@@ -8,4 +8,24 @@ html, body,  {
 #map-canvas{
 	height: 400px;
   	width: 600px;
+  	float: left;
+  	margin-left: 20px;
+  	margin-right: 5px;
+}
+
+#table-format{
+	width: 50%;
+	float:left;
+}
+
+#totals{
+	text-align: center;
+}
+
+#inline_elements{
+	display: inline;
+	width: 100%;
+}
+#formcontainer h3{
+	color: #000;
 }
